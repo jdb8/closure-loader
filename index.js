@@ -25,8 +25,9 @@ module.exports = function (source, inputSourceMap) {
     config = merge(defaultConfig, this.options[query.config || "closureLoader"], query);
 
     mapBuilder(config.paths, config.watch).then(function(provideMap) {
-        var provideRegExp = /goog\.provide *?\((['"])(.*)\1\);?/,
-            requireRegExp = /goog\.require *?\((['"])(.*)\1\);?/,
+        var provideRegExp = /^goog\.provide *?\((['"])(.*)\1\);?/,
+            requireRegExp = /^goog\.require *?\((['"])(.*)\1\);?/mg,
+            newStyleRequireRegExp = /^import ({\s?)?(.*?)(\s?})?( from )*?['"]goog:(.+)['"]/mg,
             globalVarTree = {},
             exportVarTree = {},
             matches;
@@ -40,6 +41,11 @@ module.exports = function (source, inputSourceMap) {
         while (matches = requireRegExp.exec(source)) {
             source = replaceRequire(source, matches[2], matches[0], provideMap);
             globalVars.push(matches[2]);
+        }
+
+        while (matches = newStyleRequireRegExp.exec(source)) {
+            source = replaceRequire(source, matches[5], matches[0], provideMap);
+            globalVars.push(matches[5]);
         }
 
         globalVars = globalVars
