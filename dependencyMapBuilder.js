@@ -59,7 +59,7 @@ function resolveAndCacheDirectory(directory, watch) {
 
     cache[directory] = (watch ? createWatchPromise(directory) : Promise.resolve())
         .then(function() {
-            return glob(path.join(directory, '/**/*.js'));
+            return glob(path.join(directory, '/**/*.js'), {nodir: true});
         })
         .map(function(filePath) {
             return findProvideCalls(filePath);
